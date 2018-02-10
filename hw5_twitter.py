@@ -4,8 +4,6 @@ import sys
 import requests
 import nltk
 nltk.download("punkt")
-# from nltk import word_tokenize
-# nltk.download('punkt')
 import secret_data # file that contains OAuth credentials
 # import nltk # uncomment line after you install nltk
 
@@ -44,19 +42,65 @@ with open('tweet.json', 'w') as outfile:
     outfile.write(file_name)
 
 
-
 #Code for Part 2:Analyze Tweets
+def analyze_tweets(json_datas):
+    for text in range(len(json_datas)):
+        text_file = json_data[text]["text"]
+        tokens = nltk.word_tokenize(text_file)
+        freqDist = nltk.FreqDist(token for token in tokens
+                                if token.isalpha() and "http" not in token and "https"
+                                not in token and "RT" not in token)
 
-for text in range(len(json_data)):
-    text_file = json_data[text]["text"]
-tokens = nltk.word_tokenize(text_file)
-freqDist = nltk.FreqDist(token for token in tokens
-                if token.isalpha() and "http" not in token and "https"
-                not in token and "RT" not in token)
+    for word, frequency in freqDist.most_common(5):
+        print(word + " " + str(frequency))
+        
+analyze_tweets(json_data)
+# Code for Part 3: Implement Caching
 
-for word, frequency in freqDist.most_common(5):
-    print(word + " " + str(frequency))
+CACHE_FNAME = 'cache_file_name.json'
+try:
+    cache_file = open(CACHE_FNAME, 'r')
+    cache_contents = cache_file.read()
+    CACHE_DICTION = json.loads(cache_contents)
+    cache_file.close()
+# if there was no file, no worries. There will be soon!
+except:
+    CACHE_DICTION = {}
 
+def params_unique_combination(baseurl, params):
+    alphabetized_keys = sorted(params.keys())
+    res = []
+    for k in alphabetized_keys:
+        res.append("{}-{}".format(k, params[k]))
+    return baseurl + "_".join(res)
+# print(params_unique_combination(baseurl, params))
+# The main cache function: it will always return the result for this
+# url+params combo. However, it will first look to see if we have already
+# cached the result and, if so, return the result from cache.
+# If we haven't cached the result, it will get a new one (and cache it)
+def make_request_using_cache(baseurl, params):
+    unique_ident = params_unique_combination(baseurl,params)
+
+    ## first, look in the cache to see if we already have this data
+    if unique_ident in CACHE_DICTION:
+        print("Fetching cached data...")
+        return CACHE_DICTION[unique_ident]
+
+    ## if not, fetch the data afresh, add it to the cache,
+    ## then write the cache to file
+    else:
+        print("Making a request for new data...")
+        # Make the request and cache the new data
+        resp = requests.get(baseurl, params, auth=auth)
+
+        CACHE_DICTION[unique_ident] = json.loads(resp.text)
+        dumped_json_cache = json.dumps(CACHE_DICTION)
+        fw = open(CACHE_FNAME,"w")
+        fw.write(dumped_json_cache)
+        fw.close() # Close the open file
+        return CACHE_DICTION[unique_ident]
+
+# print(make_request_using_cache(baseurl, params))
 
 
 if __name__ == "__main__":
