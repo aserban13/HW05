@@ -53,7 +53,7 @@ def analyze_tweets(json_datas):
 
     for word, frequency in freqDist.most_common(5):
         print(word + " " + str(frequency))
-        
+
 analyze_tweets(json_data)
 # Code for Part 3: Implement Caching
 
@@ -100,7 +100,7 @@ def make_request_using_cache(baseurl, params):
         fw.close() # Close the open file
         return CACHE_DICTION[unique_ident]
 
-# print(make_request_using_cache(baseurl, params))
+make_request_using_cache(baseurl, params)
 
 
 if __name__ == "__main__":
