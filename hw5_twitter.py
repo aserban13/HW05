@@ -53,8 +53,9 @@ def analyze_tweets(json_datas):
 
     for word, frequency in freqDist.most_common(5):
         print(word + " " + str(frequency))
+# Part 2 Code printing:
+# analyze_tweets(json_data)
 
-analyze_tweets(json_data)
 # Code for Part 3: Implement Caching
 
 CACHE_FNAME = 'cache_file_name.json'
@@ -100,8 +101,6 @@ def make_request_using_cache(baseurl, params):
         fw.close() # Close the open file
         return CACHE_DICTION[unique_ident]
 
-make_request_using_cache(baseurl, params)
-
 
 if __name__ == "__main__":
     if not consumer_key or not consumer_secret:
@@ -110,3 +109,6 @@ if __name__ == "__main__":
     if not access_token or not access_secret:
         print("You need to fill in this API's specific OAuth URLs in this file.")
         exit()
+
+    list_of_data = make_request_using_cache(baseurl, params)
+    analyze_tweets(list_of_data)
